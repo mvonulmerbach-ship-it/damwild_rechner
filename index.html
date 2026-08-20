@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1A3A6B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Damwild">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Damwild-Rechner &ndash; Schloss Erbach</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --blau: #1A3A6B;
+    --gruen: #5A9E1E;
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --line: #d9dde3;
+    --text: #16202e;
+    --muted: #6b7480;
+  }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Nunito Sans", sans-serif;
+    background: var(--bg); color: var(--text);
+    font-size: 17px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body { padding-bottom: 190px; }
+  button, input { font-family: inherit; }
+
+  /* ---------- Kopf ---------- */
+  header {
+    background: var(--blau); color: #fff;
+    padding: calc(12px + env(safe-area-inset-top)) 14px 12px;
+    display: flex; align-items: center; gap: 10px;
+    position: sticky; top: 0; z-index: 30;
+  }
+  header h1 { font-size: 18px; margin: 0; font-weight: 800; letter-spacing: .2px; flex: 1; }
+  header h1 small { display: block; font-weight: 500; font-size: 12px; opacity: .75; letter-spacing: 0; }
+  .iconBtn {
+    width: 42px; height: 42px; flex: 0 0 42px;
+    border-radius: 12px; border: 1.5px solid rgba(255,255,255,.35);
+    background: rgba(255,255,255,.14); color: #fff;
+    font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .iconBtn:active { transform: scale(.95); }
+
+  #kundeWrap { padding: 12px 14px 0; }
+  #kunde {
+    width: 100%; padding: 13px 14px; font-size: 16px;
+    border: 1.5px solid var(--line); border-radius: 12px;
+    background: var(--card); color: var(--text);
+  }
+  #kunde:focus { outline: none; border-color: var(--blau); }
+
+  /* ---------- Kacheln ---------- */
+  .sec { padding: 16px 14px 0; }
+  .sec h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .9px;
+    color: var(--muted); margin: 0 0 8px 2px; font-weight: 800;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .tile {
+    position: relative;
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 14px;
+    padding: 13px 12px; text-align: left; cursor: pointer;
+    display: flex; flex-direction: column; gap: 3px; min-height: 74px;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04);
+  }
+  .tile:active { transform: scale(.975); }
+  .tile .nm { font-weight: 700; font-size: 15px; line-height: 1.2; }
+  .tile .pr { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tile.stk { border-color: #cfe3bb; background: #f7fcf1; }
+  .tile .badge {
+    position: absolute; top: -7px; right: -7px;
+    min-width: 26px; height: 26px; padding: 0 7px;
+    border-radius: 13px; background: var(--gruen); color: #fff;
+    font-size: 14px; font-weight: 800; line-height: 26px; text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .hint { font-size: 12.5px; color: var(--muted); margin: 8px 2px 0; }
+
+  /* ---------- Positionsliste ---------- */
+  #liste { list-style: none; margin: 8px 0 0; padding: 0; }
+  #liste li {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card); border: 1.5px solid var(--line);
+    border-radius: 12px; padding: 11px 12px; margin-bottom: 8px;
+  }
+  #liste .txt { flex: 1; min-width: 0; }
+  #liste .t1 { font-weight: 700; font-size: 15px; }
+  #liste .t2 { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #liste .sum { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #liste .del {
+    width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px;
+    border: 1.5px solid #f0c9c9; background: #fdf3f3; color: #b42318;
+    font-size: 19px; line-height: 1; cursor: pointer;
+  }
+  #leer { color: var(--muted); font-size: 14px; padding: 14px 2px 0; }
+
+  /* ---------- Fußleiste ---------- */
+  #foot {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+    background: var(--card); border-top: 1.5px solid var(--line);
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+    box-shadow: 0 -3px 14px rgba(16,24,40,.08);
+  }
+  #summeRow {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  #summeRow .lbl { font-size: 14px; color: var(--muted); font-weight: 700; }
+  #summe { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--blau); }
+  #gesamtG { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .footBtns { display: flex; gap: 9px; }
+  .btn {
+    flex: 1; padding: 14px 8px; border-radius: 13px; font-size: 15px; font-weight: 700;
+    cursor: pointer; border: 1.5px solid var(--line); background: #fff; color: var(--text);
+  }
+  .btn:active { transform: scale(.97); }
+  .btn.prim { background: var(--gruen); border-color: var(--gruen); color: #fff; }
+  .btn.warn { color: #b42318; border-color: #f0c9c9; background: #fdf3f3; }
+
+  /* ---------- Wiege-Panel ---------- */
+  #pad {
+    position: fixed; inset: 0; z-index: 60;
+    background: rgba(16,24,40,.45);
+    display: none; align-items: flex-end;
+  }
+  #pad.open { display: flex; }
+  #padInner {
+    width: 100%; background: var(--card);
+    border-radius: 20px 20px 0 0;
+    padding: 16px 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  #padTitel { font-weight: 800; font-size: 17px; }
+  #padPreis { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  #padAnzeige {
+    margin: 14px 0 6px; padding: 14px 16px;
+    background: #f4f5f7; border-radius: 14px;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  }
+  #padG { font-size: 38px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+  #padG .unit { font-size: 20px; font-weight: 700; color: var(--muted); margin-left: 4px; }
+  #padEuro { font-size: 26px; font-weight: 800; color: var(--gruen); font-variant-numeric: tabular-nums; }
+  #padSum { font-size: 12.5px; color: var(--muted); min-height: 17px; margin-bottom: 8px; }
+  .keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .keys button {
+    padding: 17px 0; font-size: 24px; font-weight: 700;
+    border-radius: 13px; border: 1.5px solid var(--line); background: #fff; cursor: pointer;
+  }
+  .keys button:active { background: #eef1f5; }
+  .keys button.fn { font-size: 19px; color: var(--muted); }
+  .padBtns { display: flex; gap: 9px; margin-top: 10px; }
+
+  /* ---------- Preise / Einstellungen ---------- */
+  #prefs {
+    position: fixed; inset: 0; z-index: 70; background: var(--bg);
+    display: none; flex-direction: column;
+    padding: calc(16px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+  #prefs.open { display: flex; }
+  #prefs h2 { margin: 0 0 4px; font-size: 21px; }
+  #prefs p.sub { margin: 0 0 16px; color: var(--muted); font-size: 13.5px; }
+  .prow {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card); border: 1.5px solid var(--line);
+    border-radius: 12px; padding: 9px 12px; margin-bottom: 7px;
+  }
+  .prow .pn { flex: 1; font-size: 14.5px; font-weight: 600; }
+  .prow input {
+    width: 92px; padding: 10px; text-align: right; font-size: 16px; font-weight: 700;
+    border: 1.5px solid var(--line); border-radius: 10px; background: #fff;
+    font-variant-numeric: tabular-nums; color: var(--text);
+  }
+  .prow input:focus { outline: none; border-color: var(--blau); }
+  .prow .pu { font-size: 13px; color: var(--muted); width: 42px; }
+  #prefs .footBtns { margin-top: 14px; }
+
+  /* ---------- Zettel ---------- */
+  #zettel {
+    position: fixed; inset: 0; z-index: 80; background: var(--bg);
+    display: none; flex-direction: column;
+    padding: calc(16px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
+  }
+  #zettel.open { display: flex; }
+  #zettelText {
+    flex: 1; width: 100%; margin: 10px 0; padding: 13px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px; line-height: 1.45;
+    border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--text);
+    resize: none;
+  }
+  #kopiertHinweis { font-size: 13px; color: var(--gruen); font-weight: 700; min-height: 18px; text-align: center; }
+
+  /* ---------- Druck: nur der Zettel ---------- */
+  @media print {
+    body { padding: 0; background: #fff; }
+    header, #kundeWrap, .sec, #foot, #pad, #prefs,
+    #zettel { display: none !important; }
+    #druckBereich {
+      display: block !important;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px; line-height: 1.5; white-space: pre-wrap; color: #000; margin: 0;
+    }
+  }
+  #druckBereich { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Damwild-Rechner<small>Schloss Erbach</small></h1>
+  <button class="iconBtn" id="btnPrefs" aria-label="Preise">&#9881;</button>
+</header>
+
+<div id="kundeWrap">
+  <input id="kunde" type="text" placeholder="Bestellung f&uuml;r &hellip; (Name)" autocomplete="off">
+</div>
+
+<div class="sec">
+  <h2>Fleisch &ndash; antippen, dann wiegen</h2>
+  <div class="grid" id="gridKg"></div>
+</div>
+
+<div class="sec">
+  <h2>Wurst &amp; Gl&auml;ser &ndash; antippen = 1 St&uuml;ck</h2>
+  <div class="grid" id="gridStk"></div>
+  <p class="hint">Fleisch tiefgefroren und vakuumiert. Gl&auml;ser und Pfefferbei&szlig;er sind nicht gefroren, trocken lagerbar.</p>
+</div>
+
+<div class="sec">
+  <h2>Bestellung</h2>
+  <ul id="liste"></ul>
+  <p id="leer">Noch nichts erfasst.</p>
+</div>
+
+<div id="foot">
+  <div id="summeRow">
+    <div>
+      <div class="lbl">Gesamt</div>
+      <div id="gesamtG">&ndash;</div>
+    </div>
+    <div id="summe">0,00&nbsp;&euro;</div>
+  </div>
+  <div class="footBtns">
+    <button class="btn prim" id="btnZettel">Zettel</button>
+    <button class="btn warn" id="btnNeu">Neue Bestellung</button>
+  </div>
+</div>
+
+<pre id="druckBereich"></pre>
+
+<!-- Wiege-Panel -->
+<div id="pad">
+  <div id="padInner">
+    <div id="padTitel">&ndash;</div>
+    <div id="padPreis">&ndash;</div>
+    <div id="padAnzeige">
+      <div id="padG">0<span class="unit">g</span></div>
+      <div id="padEuro">0,00&nbsp;&euro;</div>
+    </div>
+    <div id="padSum"></div>
+    <div class="keys">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button class="fn" data-k="C">C</button><button data-k="0">0</button><button class="fn" data-k="back">&#9003;</button>
+    </div>
+    <div class="padBtns">
+      <button class="btn" id="padAbbruch">Zur&uuml;ck</button>
+      <button class="btn" id="padPlus">+ Portion</button>
+      <button class="btn prim" id="padFertig">Fertig</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preise -->
+<div id="prefs">
+  <h2>Preise</h2>
+  <p class="sub">Gelten sofort und bleiben auf diesem Ger&auml;t gespeichert.</p>
+  <div id="prefsRows"></div>
+  <div class="footBtns">
+    <button class="btn warn" id="prefsReset">Standard</button>
+    <button class="btn prim" id="prefsClose">Fertig</button>
+  </div>
+</div>
+
+<!-- Zettel -->
+<div id="zettel">
+  <h2 style="margin:0 0 2px;font-size:21px;">Bestellzettel</h2>
+  <p class="sub" style="margin:0;color:var(--muted);font-size:13.5px;">Zum Kopieren, Weiterschicken oder Ausdrucken.</p>
+  <textarea id="zettelText" readonly></textarea>
+  <div id="kopiertHinweis"></div>
+  <div class="footBtns" style="margin-top:10px;">
+    <button class="btn" id="zettelClose">Zur&uuml;ck</button>
+    <button class="btn" id="zettelDruck">Drucken</button>
+    <button class="btn prim" id="zettelKopie">Kopieren</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Stammdaten ----------
+  var STANDARD = [
+    { id: 'filet',    nm: 'Filet',                   art: 'kg',  preis: 40.00 },
+    { id: 'ruecken',  nm: 'Rücken, ausgelöst',        art: 'kg',  preis: 35.00 },
+    { id: 'hinterk',  nm: 'Hinterkeule, ausgelöst',        art: 'kg',  preis: 25.00 },
+    { id: 'vorderk',  nm: 'Vorderkeule / Schulter, ausgelöst', art: 'kg', preis: 20.00 },
+    { id: 'nacken',   nm: 'Nacken, ausgelöst',             art: 'kg',  preis: 17.00 },
+    { id: 'haxe',     nm: 'Haxe mit Knochen',        art: 'kg',  preis: 12.00 },
+    { id: 'lkfein',   nm: 'Leberkäse fein, 170 g',         art: 'stk', preis: 4.50 },
+    { id: 'lkgrob',   nm: 'Leberkäse grob, 170 g',         art: 'stk', preis: 4.50 },
+    { id: 'lyoner',   nm: 'Lyoner, 170 g',           art: 'stk', preis: 4.50 },
+    { id: 'pfeffer',  nm: 'Pfefferbeißer, 5 Stück',        art: 'stk', preis: 7.50 }
+  ];
+
+  var artikel = STANDARD.map(function (a) { return { id: a.id, nm: a.nm, art: a.art, preis: a.preis }; });
+  var posten = [];          // { id, art, gramm:[..] } oder { id, art:'stk', anzahl }
+  var aktuell = null;       // aktiver Artikel im Wiegepanel
+  var eingabe = '';         // getippte Ziffern
+  var puffer = [];          // schon bestaetigte Portionen im Panel
+
+  // ---------- Helfer ----------
+  var nf2 = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var nf0 = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
+  var nf3 = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+  function euro(x) { return nf2.format(x) + ' €'; }
+  function findA(id) {
+    for (var i = 0; i < artikel.length; i++) { if (artikel[i].id === id) return artikel[i]; }
+    return null;
+  }
+  // Preis einer Portion: Gramm x Kilopreis, kaufmaennisch auf Cent gerundet
+  function preisFuerGramm(gramm, kiloPreis) {
+    return Math.round((gramm / 1000) * kiloPreis * 100) / 100;
+  }
+  function postenSumme(p) {
+    var a = findA(p.id);
+    if (!a) return 0;
+    if (p.art === 'stk') return Math.round(p.anzahl * a.preis * 100) / 100;
+    var s = 0;
+    for (var i = 0; i < p.gramm.length; i++) { s += preisFuerGramm(p.gramm[i], a.preis); }
+    return Math.round(s * 100) / 100;
+  }
+  function postenGramm(p) {
+    if (p.art === 'stk') return 0;
+    var s = 0;
+    for (var i = 0; i < p.gramm.length; i++) { s += p.gramm[i]; }
+    return s;
+  }
+
+  // ---------- Speichern ----------
+  function speichern() {
+    try {
+      localStorage.setItem('damwild_preise', JSON.stringify(
+        artikel.map(function (a) { return { id: a.id, preis: a.preis }; })
+      ));
+      localStorage.setItem('damwild_bestellung', JSON.stringify({
+        kunde: document.getElementById('kunde').value, posten: posten
+      }));
+    } catch (e) {}
+  }
+  function laden() {
+    try {
+      var p = JSON.parse(localStorage.getItem('damwild_preise') || 'null');
+      if (p && p.length) {
+        p.forEach(function (x) { var a = findA(x.id); if (a && typeof x.preis === 'number') a.preis = x.preis; });
+      }
+      var b = JSON.parse(localStorage.getItem('damwild_bestellung') || 'null');
+      if (b) {
+        if (b.kunde) document.getElementById('kunde').value = b.kunde;
+        if (b.posten && b.posten.length) posten = b.posten;
+      }
+    } catch (e) {}
+  }
+
+  // ---------- Kacheln ----------
+  function kachelnBauen() {
+    var kg = document.getElementById('gridKg');
+    var stk = document.getElementById('gridStk');
+    kg.innerHTML = ''; stk.innerHTML = '';
+    artikel.forEach(function (a) {
+      var b = document.createElement('button');
+      b.className = 'tile' + (a.art === 'stk' ? ' stk' : '');
+      b.setAttribute('data-id', a.id);
+      b.innerHTML = '<span class="nm"></span><span class="pr"></span>';
+      b.querySelector('.nm').textContent = a.nm;
+      b.querySelector('.pr').textContent = a.art === 'kg'
+        ? euro(a.preis) + ' / kg'
+        : euro(a.preis) + ' / Stück';
+      b.addEventListener('click', function () { kachelKlick(a.id); });
+      (a.art === 'kg' ? kg : stk).appendChild(b);
+    });
+    badgesMalen();
+  }
+
+  function badgesMalen() {
+    var tiles = document.querySelectorAll('.tile');
+    for (var i = 0; i < tiles.length; i++) {
+      var id = tiles[i].getAttribute('data-id');
+      var alt = tiles[i].querySelector('.badge');
+      if (alt) alt.parentNode.removeChild(alt);
+      var p = null;
+      for (var j = 0; j < posten.length; j++) { if (posten[j].id === id) { p = posten[j]; break; } }
+      if (!p) continue;
+      var txt = p.art === 'stk' ? p.anzahl + '×' : p.gramm.length + '×';
+      var s = document.createElement('span');
+      s.className = 'badge';
+      s.textContent = txt;
+      tiles[i].appendChild(s);
+    }
+  }
+
+  function kachelKlick(id) {
+    var a = findA(id);
+    if (a.art === 'stk') {
+      var p = null;
+      for (var i = 0; i < posten.length; i++) { if (posten[i].id === id) { p = posten[i]; break; } }
+      if (p) { p.anzahl += 1; }
+      else { posten.push({ id: id, art: 'stk', anzahl: 1 }); }
+      malen();
+    } else {
+      padOeffnen(id);
+    }
+  }
+
+  // ---------- Wiege-Panel ----------
+  function padOeffnen(id) {
+    aktuell = findA(id);
+    eingabe = '';
+    puffer = [];
+    document.getElementById('padTitel').textContent = aktuell.nm;
+    document.getElementById('padPreis').textContent = euro(aktuell.preis) + ' / kg · Gewicht in Gramm eintippen';
+    padMalen();
+    document.getElementById('pad').classList.add('open');
+  }
+  function padSchliessen() {
+    document.getElementById('pad').classList.remove('open');
+    aktuell = null; eingabe = ''; puffer = [];
+  }
+  function padMalen() {
+    var g = parseInt(eingabe, 10) || 0;
+    document.getElementById('padG').innerHTML = nf0.format(g) + '<span class="unit">g</span>';
+    document.getElementById('padEuro').textContent = euro(preisFuerGramm(g, aktuell ? aktuell.preis : 0));
+    var el = document.getElementById('padSum');
+    if (!puffer.length) { el.textContent = ''; return; }
+    var s = 0, teile = [];
+    puffer.forEach(function (x) { s += preisFuerGramm(x, aktuell.preis); teile.push(nf0.format(x) + ' g'); });
+    el.textContent = puffer.length + ' Portion' + (puffer.length === 1 ? '' : 'en') + ' erfasst: '
+      + teile.join(' + ') + ' = ' + euro(Math.round(s * 100) / 100);
+  }
+  function padZiffer(k) {
+    if (k === 'C') { eingabe = ''; }
+    else if (k === 'back') { eingabe = eingabe.slice(0, -1); }
+    else if (eingabe.length < 5) { eingabe = (eingabe === '0' ? '' : eingabe) + k; }
+    padMalen();
+  }
+  function portionUebernehmen() {
+    var g = parseInt(eingabe, 10) || 0;
+    if (g > 0) { puffer.push(g); eingabe = ''; padMalen(); return true; }
+    return false;
+  }
+  function padFertig() {
+    portionUebernehmen();
+    if (puffer.length) {
+      var p = null;
+      for (var i = 0; i < posten.length; i++) { if (posten[i].id === aktuell.id) { p = posten[i]; break; } }
+      if (!p) { p = { id: aktuell.id, art: 'kg', gramm: [] }; posten.push(p); }
+      p.gramm = p.gramm.concat(puffer);
+    }
+    padSchliessen();
+    malen();
+  }
+
+  // ---------- Liste, Summe ----------
+  function malen() {
+    var ul = document.getElementById('liste');
+    ul.innerHTML = '';
+    var summe = 0, gramm = 0;
+
+    posten.forEach(function (p, idx) {
+      var a = findA(p.id);
+      if (!a) return;
+      var ps = postenSumme(p);
+      summe += ps;
+      gramm += postenGramm(p);
+
+      var li = document.createElement('li');
+      var t2;
+      if (p.art === 'stk') {
+        t2 = p.anzahl + ' × ' + euro(a.preis);
+      } else {
+        var teile = p.gramm.map(function (g) { return nf0.format(g) + ' g'; });
+        var gs = postenGramm(p);
+        t2 = teile.join(' + ')
+          + (p.gramm.length > 1 ? ' = ' + nf0.format(gs) + ' g' : '')
+          + '  ·  ' + euro(a.preis) + '/kg';
+      }
+      li.innerHTML = '<div class="txt"><div class="t1"></div><div class="t2"></div></div>'
+        + '<div class="sum"></div><button class="del" aria-label="Position löschen">&times;</button>';
+      li.querySelector('.t1').textContent = a.nm;
+      li.querySelector('.t2').textContent = t2;
+      li.querySelector('.sum').textContent = euro(ps);
+      li.querySelector('.del').addEventListener('click', function () {
+        if (p.art === 'stk' && p.anzahl > 1) { p.anzahl -= 1; }
+        else if (p.art === 'kg' && p.gramm.length > 1) { p.gramm.pop(); }
+        else { posten.splice(idx, 1); }
+        malen();
+      });
+      ul.appendChild(li);
+    });
+
+    summe = Math.round(summe * 100) / 100;
+    document.getElementById('summe').textContent = euro(summe);
+    document.getElementById('leer').style.display = posten.length ? 'none' : 'block';
+    document.getElementById('gesamtG').textContent = gramm
+      ? nf0.format(gramm) + ' g Fleisch (' + nf3.format(gramm / 1000) + ' kg)'
+      : '–';
+    badgesMalen();
+    speichern();
+  }
+
+  // ---------- Zettel ----------
+  function zettelText() {
+    var kunde = document.getElementById('kunde').value.trim();
+    var d = new Date();
+    var dd = ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear();
+    var z = [];
+    z.push('Damwild vom Schloss Erbach');
+    z.push(kunde ? 'Bestellung für: ' + kunde : 'Bestellung');
+    z.push('Datum: ' + dd);
+    z.push('');
+    var summe = 0, gramm = 0;
+    posten.forEach(function (p) {
+      var a = findA(p.id);
+      if (!a) return;
+      var ps = postenSumme(p);
+      summe += ps; gramm += postenGramm(p);
+      if (p.art === 'stk') {
+        z.push(a.nm);
+        z.push('   ' + p.anzahl + ' × ' + euro(a.preis) + '   =  ' + euro(ps));
+      } else {
+        z.push(a.nm + '  (' + euro(a.preis) + '/kg)');
+        z.push('   ' + p.gramm.map(function (g) { return nf0.format(g) + ' g'; }).join(' + ')
+          + (p.gramm.length > 1 ? ' = ' + nf0.format(postenGramm(p)) + ' g' : '')
+          + '   =  ' + euro(ps));
+      }
+    });
+    summe = Math.round(summe * 100) / 100;
+    z.push('');
+    if (gramm) z.push('Fleisch gesamt: ' + nf0.format(gramm) + ' g');
+    z.push('GESAMT: ' + euro(summe));
+    z.push('');
+    z.push('Fleisch tiefgefroren und vakuumiert.');
+    z.push('Gläser und Pfefferbeißer nicht gefroren, trocken lagerbar.');
+    return z.join('\n');
+  }
+
+  // ---------- Preise ----------
+  function prefsBauen() {
+    var w = document.getElementById('prefsRows');
+    w.innerHTML = '';
+    artikel.forEach(function (a) {
+      var r = document.createElement('div');
+      r.className = 'prow';
+      r.innerHTML = '<span class="pn"></span><input type="text" inputmode="decimal"><span class="pu"></span>';
+      r.querySelector('.pn').textContent = a.nm;
+      var inp = r.querySelector('input');
+      inp.value = nf2.format(a.preis);
+      r.querySelector('.pu').textContent = a.art === 'kg' ? '€/kg' : '€/St.';
+      inp.addEventListener('change', function () {
+        var v = parseFloat(inp.value.replace(/\./g, '').replace(',', '.'));
+        if (!isNaN(v) && v >= 0) { a.preis = Math.round(v * 100) / 100; }
+        inp.value = nf2.format(a.preis);
+        kachelnBauen(); malen();
+      });
+      w.appendChild(r);
+    });
+  }
+
+  // ---------- Ereignisse ----------
+  document.getElementById('btnPrefs').addEventListener('click', function () {
+    prefsBauen();
+    document.getElementById('prefs').classList.add('open');
+  });
+  document.getElementById('prefsClose').addEventListener('click', function () {
+    document.getElementById('prefs').classList.remove('open');
+  });
+  document.getElementById('prefsReset').addEventListener('click', function () {
+    STANDARD.forEach(function (s) { var a = findA(s.id); if (a) a.preis = s.preis; });
+    prefsBauen(); kachelnBauen(); malen();
+  });
+
+  var keyBtns = document.querySelectorAll('.keys button');
+  for (var i = 0; i < keyBtns.length; i++) {
+    keyBtns[i].addEventListener('click', function () { padZiffer(this.getAttribute('data-k')); });
+  }
+  document.getElementById('padPlus').addEventListener('click', function () { portionUebernehmen(); });
+  document.getElementById('padFertig').addEventListener('click', padFertig);
+  document.getElementById('padAbbruch').addEventListener('click', padSchliessen);
+  document.getElementById('pad').addEventListener('click', function (e) {
+    if (e.target === this) padSchliessen();
+  });
+
+  document.getElementById('btnNeu').addEventListener('click', function () {
+    if (!posten.length && !document.getElementById('kunde').value) return;
+    if (confirm('Bestellung löschen und neu anfangen?')) {
+      posten = [];
+      document.getElementById('kunde').value = '';
+      malen();
+    }
+  });
+
+  document.getElementById('btnZettel').addEventListener('click', function () {
+    var t = zettelText();
+    document.getElementById('zettelText').value = t;
+    document.getElementById('druckBereich').textContent = t;
+    document.getElementById('kopiertHinweis').textContent = '';
+    document.getElementById('zettel').classList.add('open');
+  });
+  document.getElementById('zettelClose').addEventListener('click', function () {
+    document.getElementById('zettel').classList.remove('open');
+  });
+  document.getElementById('zettelDruck').addEventListener('click', function () { window.print(); });
+  document.getElementById('zettelKopie').addEventListener('click', function () {
+    var ta = document.getElementById('zettelText');
+    var ok = false;
+    try { ta.removeAttribute('readonly'); ta.select(); ta.setSelectionRange(0, 99999); ok = document.execCommand('copy'); ta.setAttribute('readonly', 'readonly'); } catch (e) {}
+    if (navigator.clipboard) { navigator.clipboard.writeText(ta.value).then(function () {}, function () {}); ok = true; }
+    document.getElementById('kopiertHinweis').textContent = ok ? 'Kopiert.' : 'Bitte von Hand markieren und kopieren.';
+  });
+
+  document.getElementById('kunde').addEventListener('input', speichern);
+
+  // ---------- Start ----------
+  laden();
+  kachelnBauen();
+  malen();
+})();
+</script>
+</body>
+</html>
