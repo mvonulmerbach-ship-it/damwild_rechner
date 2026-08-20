@@ -16,6 +16,10 @@ Live: https://mvonulmerbach-ship-it.github.io/damwild_rechner/
 
 Bestellung und Preise liegen im localStorage des Browsers, gehen also beim Schließen nicht verloren.
 
+## Logo
+
+`logo.png` (Kopfzeile und Ausdruck) sowie die App-Icons sind aus dem Etiketten-Motiv „Schloss Erbach Dammwild“ erzeugt. Beim Austausch: `logo.png` 256×256 mit Transparenz, `icon-192.png` und `icon-512.png` transparent, `icon-maskable-512.png` und `apple-touch-icon.png` mit cremefarbenem Hintergrund (maskable mit 14 % Rand als Safe-Zone).
+
 ## Preise (Stand 20.08.2026)
 
 | Artikel | Preis |

@@ -41,6 +41,11 @@
   }
   header h1 { font-size: 18px; margin: 0; font-weight: 800; letter-spacing: .2px; flex: 1; }
   header h1 small { display: block; font-weight: 500; font-size: 12px; opacity: .75; letter-spacing: 0; }
+  #logo {
+    width: 46px; height: 46px; flex: 0 0 46px; border-radius: 50%;
+    background: #f7f0dd; object-fit: cover;
+    box-shadow: 0 0 0 1.5px rgba(255,255,255,.35);
+  }
   .iconBtn {
     width: 42px; height: 42px; flex: 0 0 42px;
     border-radius: 12px; border: 1.5px solid rgba(255,255,255,.35);
@@ -205,18 +210,20 @@
     body { padding: 0; background: #fff; }
     header, #kundeWrap, .sec, #foot, #pad, #prefs,
     #zettel { display: none !important; }
+    #druck { display: block !important; }
+    #druckLogo { display: block; width: 34mm; height: 34mm; margin: 0 auto 6mm; }
     #druckBereich {
-      display: block !important;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 12px; line-height: 1.5; white-space: pre-wrap; color: #000; margin: 0;
     }
   }
-  #druckBereich { display: none; }
+  #druck { display: none; }
 </style>
 </head>
 <body>
 
 <header>
+  <img id="logo" src="logo.png" alt="Schloss Erbach Dammwild">
   <h1>Damwild-Rechner<small>Schloss Erbach</small></h1>
   <button class="iconBtn" id="btnPrefs" aria-label="Preise">&#9881;</button>
 </header>
@@ -256,7 +263,10 @@
   </div>
 </div>
 
-<pre id="druckBereich"></pre>
+<div id="druck">
+  <img id="druckLogo" src="logo.png" alt="Schloss Erbach Dammwild">
+  <pre id="druckBereich"></pre>
+</div>
 
 <!-- Wiege-Panel -->
 <div id="pad">
@@ -624,7 +634,9 @@
   document.getElementById('btnZettel').addEventListener('click', function () {
     var t = zettelText();
     document.getElementById('zettelText').value = t;
-    document.getElementById('druckBereich').textContent = t;
+    // Auf dem Ausdruck ersetzt das Logo die Kopfzeile
+    document.getElementById('druckBereich').textContent =
+      t.replace(/^Damwild vom Schloss Erbach\n/, '');
     document.getElementById('kopiertHinweis').textContent = '';
     document.getElementById('zettel').classList.add('open');
   });
