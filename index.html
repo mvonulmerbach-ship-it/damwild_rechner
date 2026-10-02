@@ -2,8 +2,9 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1A3A6B">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Damwild">
 <link rel="manifest" href="manifest.webmanifest">
@@ -11,17 +12,49 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Damwild-Rechner &ndash; Schloss Erbach</title>
+<script>
+/* Hell/Dunkel ohne Aufblitzen: gespeicherte Wahl (damwild_theme) vor dem CSS anwenden, Standard System. */
+(function(){var w="system";try{w=localStorage.getItem("damwild_theme")||"system"}catch(e){}
+var d=w==="dark"||(w!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches);
+document.documentElement.setAttribute("data-theme",d?"dark":"light");})();
+</script>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   :root {
     --blau: #1A3A6B;
-    --gruen: #5A9E1E;
+    --gruen: #437d14;       /* 02.10.2026: #5A9E1E gab weisser Schrift nur 3,31:1 */
     --bg: #f4f5f7;
     --card: #ffffff;
     --line: #d9dde3;
     --text: #16202e;
-    --muted: #6b7480;
+    --muted: #5f6873;       /* 02.10.2026: #6b7480 nur 4,34:1 auf --bg */
+    /* 02.10.2026: Farben, die bisher fest im CSS standen, als Variablen fuer den Dunkelmodus */
+    --kopf: var(--blau);
+    --blau-text: var(--blau);
+    --gruen-text: var(--gruen);
+    --feld: #ffffff;
+    --anzeige: #f4f5f7;
+    --taste-aktiv: #eef1f5;
+    --stk-bg: #f7fcf1; --stk-rand: #cfe3bb;
+    --warn: #b42318; --warn-bg: #fdf3f3; --warn-rand: #f0c9c9;
   }
+  [data-theme="dark"] {
+    --kopf: #142c52;
+    --blau-text: #93b4e8;
+    --gruen: #3d7413;
+    --gruen-text: #8fd15a;
+    --bg: #121417;
+    --card: #1c1f24;
+    --line: #343a43;
+    --text: #e8ebef;
+    --muted: #a3abb6;
+    --feld: #23272d;
+    --anzeige: #121417;
+    --taste-aktiv: #2b3038;
+    --stk-bg: #1b2416; --stk-rand: #3a5428;
+    --warn: #f2a39b; --warn-bg: #3a1d1b; --warn-rand: #6b3330;
+  }
+  [data-theme="dark"] { color-scheme: dark; }
   html, body {
     margin: 0; padding: 0; min-height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Nunito Sans", sans-serif;
@@ -34,7 +67,7 @@
 
   /* ---------- Kopf ---------- */
   header {
-    background: var(--blau); color: #fff;
+    background: var(--kopf); color: #fff;
     padding: calc(12px + env(safe-area-inset-top)) 14px 12px;
     display: flex; align-items: center; gap: 10px;
     position: sticky; top: 0; z-index: 30;
@@ -47,7 +80,7 @@
     box-shadow: 0 0 0 1.5px rgba(255,255,255,.35);
   }
   .iconBtn {
-    width: 42px; height: 42px; flex: 0 0 42px;
+    width: 44px; height: 44px; flex: 0 0 44px;
     border-radius: 12px; border: 1.5px solid rgba(255,255,255,.35);
     background: rgba(255,255,255,.14); color: #fff;
     font-size: 20px; cursor: pointer;
@@ -59,7 +92,7 @@
   #kunde {
     width: 100%; padding: 13px 14px; font-size: 16px;
     border: 1.5px solid var(--line); border-radius: 12px;
-    background: var(--card); color: var(--text);
+    background: var(--feld); color: var(--text);
   }
   #kunde:focus { outline: none; border-color: var(--blau); }
 
@@ -81,7 +114,7 @@
   .tile:active { transform: scale(.975); }
   .tile .nm { font-weight: 700; font-size: 15px; line-height: 1.2; }
   .tile .pr { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .tile.stk { border-color: #cfe3bb; background: #f7fcf1; }
+  .tile.stk { border-color: var(--stk-rand); background: var(--stk-bg); }
   .tile .badge {
     position: absolute; top: -7px; right: -7px;
     min-width: 26px; height: 26px; padding: 0 7px;
@@ -103,8 +136,8 @@
   #liste .t2 { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
   #liste .sum { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
   #liste .del {
-    width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px;
-    border: 1.5px solid #f0c9c9; background: #fdf3f3; color: #b42318;
+    width: 44px; height: 44px; flex: 0 0 44px; border-radius: 10px;
+    border: 1.5px solid var(--warn-rand); background: var(--warn-bg); color: var(--warn);
     font-size: 19px; line-height: 1; cursor: pointer;
   }
   #leer { color: var(--muted); font-size: 14px; padding: 14px 2px 0; }
@@ -121,16 +154,16 @@
     margin-bottom: 10px;
   }
   #summeRow .lbl { font-size: 14px; color: var(--muted); font-weight: 700; }
-  #summe { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--blau); }
+  #summe { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--blau-text); }
   #gesamtG { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .footBtns { display: flex; gap: 9px; }
   .btn {
     flex: 1; padding: 14px 8px; border-radius: 13px; font-size: 15px; font-weight: 700;
-    cursor: pointer; border: 1.5px solid var(--line); background: #fff; color: var(--text);
+    cursor: pointer; border: 1.5px solid var(--line); background: var(--feld); color: var(--text);
   }
   .btn:active { transform: scale(.97); }
   .btn.prim { background: var(--gruen); border-color: var(--gruen); color: #fff; }
-  .btn.warn { color: #b42318; border-color: #f0c9c9; background: #fdf3f3; }
+  .btn.warn { color: var(--warn); border-color: var(--warn-rand); background: var(--warn-bg); }
 
   /* ---------- Wiege-Panel ---------- */
   #pad {
@@ -148,19 +181,20 @@
   #padPreis { font-size: 13px; color: var(--muted); margin-top: 2px; }
   #padAnzeige {
     margin: 14px 0 6px; padding: 14px 16px;
-    background: #f4f5f7; border-radius: 14px;
+    background: var(--anzeige); border-radius: 14px;
     display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
   }
   #padG { font-size: 38px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
   #padG .unit { font-size: 20px; font-weight: 700; color: var(--muted); margin-left: 4px; }
-  #padEuro { font-size: 26px; font-weight: 800; color: var(--gruen); font-variant-numeric: tabular-nums; }
+  #padEuro { font-size: 26px; font-weight: 800; color: var(--gruen-text); font-variant-numeric: tabular-nums; }
   #padSum { font-size: 12.5px; color: var(--muted); min-height: 17px; margin-bottom: 8px; }
   .keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .keys button {
     padding: 17px 0; font-size: 24px; font-weight: 700;
-    border-radius: 13px; border: 1.5px solid var(--line); background: #fff; cursor: pointer;
+    border-radius: 13px; border: 1.5px solid var(--line); background: var(--feld); color: var(--text); cursor: pointer;
+    touch-action: manipulation;   /* Doppeltipp auf den Ziffernblock zoomt nicht */
   }
-  .keys button:active { background: #eef1f5; }
+  .keys button:active { background: var(--taste-aktiv); }
   .keys button.fn { font-size: 19px; color: var(--muted); }
   .padBtns { display: flex; gap: 9px; margin-top: 10px; }
 
@@ -182,7 +216,7 @@
   .prow .pn { flex: 1; font-size: 14.5px; font-weight: 600; }
   .prow input {
     width: 92px; padding: 10px; text-align: right; font-size: 16px; font-weight: 700;
-    border: 1.5px solid var(--line); border-radius: 10px; background: #fff;
+    border: 1.5px solid var(--line); border-radius: 10px; background: var(--feld);
     font-variant-numeric: tabular-nums; color: var(--text);
   }
   .prow input:focus { outline: none; border-color: var(--blau); }
@@ -200,10 +234,19 @@
     flex: 1; width: 100%; margin: 10px 0; padding: 13px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 13px; line-height: 1.45;
-    border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--text);
+    border: 1.5px solid var(--line); border-radius: 12px; background: var(--feld); color: var(--text);
     resize: none;
   }
-  #kopiertHinweis { font-size: 13px; color: var(--gruen); font-weight: 700; min-height: 18px; text-align: center; }
+  #kopiertHinweis { font-size: 13px; color: var(--gruen-text); font-weight: 700; min-height: 18px; text-align: center; }
+
+  /* ---------- 02.10.2026 (Mini-App-Ueberarbeitung S5): Inhalt auf 580 px zentriert (Muster), Leisten bleiben vollbreit ---------- */
+  #kundeWrap, .sec { max-width: 580px; margin-left: auto; margin-right: auto; }
+  header, #foot, #prefs, #zettel {
+    padding-left: max(14px, calc((100% - 580px) / 2 + 14px));
+    padding-right: max(14px, calc((100% - 580px) / 2 + 14px));
+  }
+  #padInner { max-width: 580px; margin: 0 auto; }
+  .btn, .tile, .del, .iconBtn { touch-action: manipulation; }
 
   /* ---------- Druck: nur der Zettel ---------- */
   @media print {
@@ -225,6 +268,7 @@
 <header>
   <img id="logo" src="logo.png" alt="Schloss Erbach Dammwild">
   <h1>Damwild-Rechner<small>Schloss Erbach</small></h1>
+  <button class="iconBtn" id="themebtn" aria-label="Erscheinungsbild: System" title="Erscheinungsbild: System">&#9680;</button>
   <button class="iconBtn" id="btnPrefs" aria-label="Preise">&#9881;</button>
 </header>
 
@@ -654,11 +698,42 @@
 
   document.getElementById('kunde').addEventListener('input', speichern);
 
+  // ---------- Hell/Dunkel (02.10.2026): System · Hell · Dunkel, Standard System ----------
+  var THEME_FOLGE = ['system', 'light', 'dark'];
+  var THEME_SYMBOL = { system: '\u25D0', light: '\u2600\uFE0F', dark: '\uD83C\uDF19' };
+  var THEME_NAME = { system: 'System', light: 'Hell', dark: 'Dunkel' };
+  var dunkelAbfrage = window.matchMedia('(prefers-color-scheme: dark)');
+  var themeWahl = 'system';
+  try { themeWahl = localStorage.getItem('damwild_theme') || 'system'; } catch (e) {}
+  if (THEME_FOLGE.indexOf(themeWahl) < 0) themeWahl = 'system';
+  function themeAnwenden() {
+    var dunkel = themeWahl === 'dark' || (themeWahl === 'system' && dunkelAbfrage.matches);
+    document.documentElement.setAttribute('data-theme', dunkel ? 'dark' : 'light');
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', dunkel ? '#142c52' : '#1A3A6B');
+    var b = document.getElementById('themebtn');
+    b.textContent = THEME_SYMBOL[themeWahl];
+    b.setAttribute('aria-label', 'Erscheinungsbild: ' + THEME_NAME[themeWahl]);
+    b.title = 'Erscheinungsbild: ' + THEME_NAME[themeWahl];
+  }
+  document.getElementById('themebtn').addEventListener('click', function () {
+    themeWahl = THEME_FOLGE[(THEME_FOLGE.indexOf(themeWahl) + 1) % THEME_FOLGE.length];
+    try { localStorage.setItem('damwild_theme', themeWahl); } catch (e) {}
+    themeAnwenden();
+  });
+  dunkelAbfrage.addEventListener('change', themeAnwenden);
+  themeAnwenden();
+
   // ---------- Start ----------
   laden();
   kachelnBauen();
   malen();
 })();
+</script>
+<script>
+/* Service Worker (02.10.2026, Q-2): App laeuft offline, loescht nur eigene Caches (sw.js). */
+if ("serviceWorker" in navigator && window.top === window) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
 </script>
 </body>
 </html>

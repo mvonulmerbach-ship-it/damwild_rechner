@@ -13,8 +13,13 @@ Live: https://mvonulmerbach-ship-it.github.io/damwild_rechner/
 - `×` in der Liste entfernt eine Portion bzw. ein Stück, beim letzten die ganze Position.
 - **Zettel** erzeugt die Bestellung als Text zum Kopieren (WhatsApp) oder Drucken.
 - **Zahnrad** oben rechts: Preise ändern. Sie bleiben auf dem Gerät gespeichert, `Standard` setzt sie zurück.
+- **◐** daneben: Erscheinungsbild System (Standard) · Hell · Dunkel (gespeichert unter `damwild_theme`).
 
 Bestellung und Preise liegen im localStorage des Browsers, gehen also beim Schließen nicht verloren.
+
+## Offline
+
+`sw.js` (Service Worker, network first mit Cache als Rückfall) hält App, Icons und Logo vor. Nach dem ersten Öffnen läuft der Rechner ohne Netz, z. B. am Stand ohne Empfang.
 
 ## Logo
 
