@@ -95,12 +95,14 @@ document.documentElement.setAttribute("data-theme",d?"dark":"light");})();
     background: var(--feld); color: var(--text);
   }
   #kunde:focus { outline: none; border-color: var(--blau); }
+  #kundeLbl { display: block; margin: 0 0 6px 2px; font-size: 14px; font-weight: 700; color: var(--muted); }
+  #kundeLbl span { font-weight: 400; }
 
   /* ---------- Kacheln ---------- */
   .sec { padding: 16px 14px 0; }
   .sec h2 {
-    font-size: 12px; text-transform: uppercase; letter-spacing: .9px;
-    color: var(--muted); margin: 0 0 8px 2px; font-weight: 800;
+    font-size: 14px;
+    color: var(--muted); margin: 0 0 8px 2px; font-weight: 700;
   }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
   .tile {
@@ -274,7 +276,8 @@ document.documentElement.setAttribute("data-theme",d?"dark":"light");})();
 </header>
 
 <div id="kundeWrap">
-  <input id="kunde" type="text" placeholder="Bestellung f&uuml;r &hellip; (Name)" autocomplete="off">
+  <label for="kunde" id="kundeLbl">Bestellung f&uuml;r <span>(optional)</span></label>
+  <input id="kunde" type="text" placeholder="Name" autocomplete="off">
 </div>
 
 <div class="sec">
